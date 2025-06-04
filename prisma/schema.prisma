@@ -1,0 +1,72 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  nativeLanguage String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  progress      Progress?
+  challenges    Challenge[]
+  sessions      Session[]
+}
+
+model Progress {
+  id            String    @id @default(cuid())
+  userId        String    @unique
+  user          User      @relation(fields: [userId], references: [id])
+  readingScore  Float     @default(0)
+  writingScore  Float     @default(0)
+  listeningScore Float    @default(0)
+  speakingScore Float     @default(0)
+  streak        Int       @default(0)
+  lastPracticeDate DateTime?
+  totalPoints   Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Challenge {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  type          String    // reading, writing, listening, speaking
+  content       String
+  completed     Boolean   @default(false)
+  score         Float?
+  feedback      String?
+  createdAt     DateTime  @default(now())
+  completedAt   DateTime?
+}
+
+model Session {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  startTime     DateTime  @default(now())
+  endTime       DateTime?
+  duration      Int?      // in minutes
+  skillType     String    // reading, writing, listening, speaking
+  exercises     Exercise[]
+}
+
+model Exercise {
+  id            String    @id @default(cuid())
+  sessionId     String
+  session       Session   @relation(fields: [sessionId], references: [id])
+  type          String    // question type
+  content       String
+  userAnswer    String?
+  correctAnswer String
+  score         Float?
+  feedback      String?
+  createdAt     DateTime  @default(now())
+} 
